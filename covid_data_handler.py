@@ -4,7 +4,6 @@ from datetime import date
 import time
 import sched
 scheduler = sched.scheduler(time.time, time.sleep)
-
 cases_and_deaths = {
     "areaCode": "areaCode",
     "areaName": "areaName",
@@ -36,7 +35,8 @@ def covid_api_request(location_type = "ltla", location = "Exeter"):
         
     lines = parse_csv_data("nation_"+str(date.today())+".csv")
 
-    intlast7day_cases, current_hospital_cases, total_deaths = process_covid_csv_data(lines)
+    last7day_cases, current_hospital_cases, total_deaths = process_covid_csv_data(lines)
+    print(last7day_cases, current_hospital_cases, total_deaths)
 
 def parse_csv_data(csv_file_name):
     with open(csv_file_name) as file:
@@ -49,13 +49,16 @@ def process_covid_csv_data(covid_csv_data):
     total_deaths = 0
     current_hospital_cases = 0    
     for i in range (1,8):
-        last7day_cases += int(covid_csv_data[i].split(",")[6])
+        if (covid_csv_data[i].split(",")[6] != "\n"):
+            last7day_cases += int(covid_csv_data[i].split(",")[6])
     current_hospital_cases = covid_csv_data[2].split(",")[5]
     for i in range (1,len(covid_csv_data)):
         if covid_csv_data[i].split(",")[4] != "":
             total_deaths = covid_csv_data[i].split(",")[4]
             break
     return last7day_cases, current_hospital_cases, total_deaths
+        
+
         
 
 def main():
