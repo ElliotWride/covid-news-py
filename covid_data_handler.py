@@ -2,8 +2,12 @@ from datetime import date
 from uk_covid19 import Cov19API
 from datetime import date
 import time
-import sched
-scheduler = sched.scheduler(time.time, time.sleep)
+
+
+week_cases = 0
+hospital_cases = 0
+deaths = 0
+
 cases_and_deaths = {
     "areaCode": "areaCode",
     "areaName": "areaName",
@@ -15,28 +19,12 @@ cases_and_deaths = {
 }
 
 
-def schedule_covid_updates(update_interval,update_name):
-    print("updating...")
-    update_name("nation","England")
-    csv_data = parse_csv_data("nation_"+str(date.today())+".csv")
-    last7day_cases, current_hospital_cases, total_deaths = process_covid_csv_data(csv_data)
-    scheduler.enter(update_interval, 1,schedule_covid_updates, (update_interval, update_name))
-    scheduler.run(blocking = False)
-    return (last7day_cases, current_hospital_cases, total_deaths)
-
-
-def covid_api_request(location_type = "ltla", location = "Exeter"):
-    
+def covid_api_request(location_type = "nation", location = "England"):
     location_filter = ["areaType="+location_type,"areaName="+location]
     api = Cov19API(filters=location_filter, structure=cases_and_deaths)
-    data = api.get_csv()
-    with open("nation_"+str(date.today())+".csv", "w") as myfile:
-        myfile.write(data)
-        
-    lines = parse_csv_data("nation_"+str(date.today())+".csv")
+    data = api.get_json()
+    return data
 
-    last7day_cases, current_hospital_cases, total_deaths = process_covid_csv_data(lines)
-    print(last7day_cases, current_hospital_cases, total_deaths)
 
 def parse_csv_data(csv_file_name):
     with open(csv_file_name) as file:
@@ -58,13 +46,34 @@ def process_covid_csv_data(covid_csv_data):
             break
     return last7day_cases, current_hospital_cases, total_deaths
         
+def get_covid_data(location_type,location):
+    print("updating..")
+    data = covid_api_request(location_type,location)
+    for dic in data["data"]:
+        if dic["cumDailyNsoDeathsByDeathDate"] !=None:
+            total_deaths = dic["cumDailyNsoDeathsByDeathDate"]
+            break
 
+    for dic in data["data"]:
+        if dic["hospitalCases"] !=None:
+            current_hospital_cases = dic["hospitalCases"]
+            break
         
+    days = 0
+    last7day_cases = 0
+    for dic in data["data"]:
+        if dic["newCasesBySpecimenDate"] != None:
+            last7day_cases += dic["newCasesBySpecimenDate"]
+            days +=1
+        if days == 7:
+            break
+    global week_cases, hospital_cases, deaths
+    week_cases, hospital_cases, deaths = last7day_cases, current_hospital_cases, total_deaths
+    return last7day_cases, current_hospital_cases, total_deaths
+    
 
-def main():
-    time_delay = 5
-    schedule_covid_updates(time_delay,covid_api_request)    
    
+    
 
 if __name__ == "__main__":
     main()

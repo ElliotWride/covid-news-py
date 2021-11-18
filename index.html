@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,7 +27,7 @@
     <div class="container">
       <div class="row">
 
-    <!-- ALARMS COLUMN -->
+    <!-- UPDATES COLUMN -->
     <div class="col-sm">
       Scheduled updates:
 
@@ -35,7 +36,7 @@
         <div class="toast-header">
           <strong class="mr-auto">{{ update['title'] }}</strong>
           <form action="/index" method="get">
-          <button type="submit" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close" name=alarm_item value="{{ alarm['title'] }}">
+          <button type="submit" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close" name=update_item value="{{ update['title'] }}">
             <span aria-hidden="true">&times;</span>
           </button>
           </form>
@@ -64,7 +65,7 @@
       <br />
       <h3 class="h3 mb-3 font-weight-normal">Schedule data updates</h3>
 
-      <input type="time" name="alarm" class="form-control">
+      <input type="time" name="update" class="form-control">
       <br>
       <input name="two" placeholder="Update label" required="">
       <br>
@@ -88,7 +89,7 @@
   </div>
 
 
-  <!-- NOTIFICATIONS COLUMN -->
+  <!-- NEWS COLUMN -->
   <div class="col-sm">
     News headlines:
     {% for news in news_articles: %}
