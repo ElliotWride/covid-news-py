@@ -4,6 +4,7 @@ from datetime import date
 import time
 
 
+
 week_cases = 0
 hospital_cases = 0
 deaths = 0
@@ -19,7 +20,7 @@ cases_and_deaths = {
 }
 
 
-def covid_api_request(location_type = "nation", location = "England"):
+def covid_api_request(location_type = "ltla", location = "Exeter"):
     location_filter = ["areaType="+location_type,"areaName="+location]
     api = Cov19API(filters=location_filter, structure=cases_and_deaths)
     data = api.get_json()
@@ -46,8 +47,7 @@ def process_covid_csv_data(covid_csv_data):
             break
     return last7day_cases, current_hospital_cases, total_deaths
         
-def get_covid_data(location_type,location):
-    print("updating..")
+def get_covid_data(location_type= "ltla",location = "Exeter"):
     data = covid_api_request(location_type,location)
     for dic in data["data"]:
         if dic["cumDailyNsoDeathsByDeathDate"] !=None:
@@ -58,13 +58,14 @@ def get_covid_data(location_type,location):
         if dic["hospitalCases"] !=None:
             current_hospital_cases = dic["hospitalCases"]
             break
+    
         
     days = 0
     last7day_cases = 0
     for dic in data["data"]:
         if dic["newCasesBySpecimenDate"] != None:
-            last7day_cases += dic["newCasesBySpecimenDate"]
             days +=1
+            last7day_cases += dic["newCasesBySpecimenDate"]            
         if days == 7:
             break
     global week_cases, hospital_cases, deaths
@@ -76,7 +77,7 @@ def get_covid_data(location_type,location):
     
 
 if __name__ == "__main__":
-    main()
+    get_covid_data("nation","England")
 
     
 
