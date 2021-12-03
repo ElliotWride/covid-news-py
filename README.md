@@ -10,5 +10,11 @@ Setup:                                                                <br>
 -Open config file and change "ADD_API_KEY_HERE" to your API key       <br>
 -Change your location to your preffered location                      <br>
                                                                       <br>
+How to use:
+-run the main.py
+-search http://127.0.0.1:5000/index in browser
+-queue updates using the UI on the webstie
+-remove articles and updates using the UI also
+                                                                      
 Notes:                                                                <br>
 needs flask and uk-covid19 to work, must run on python 3.9 or above.  <br>
