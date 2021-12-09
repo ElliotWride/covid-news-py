@@ -1,13 +1,6 @@
 '''Gets data from the Cov19API and processes the relevant information'''
-import time
 from uk_covid19 import Cov19API
-
-NATIONAL_WEEK_CASES = 0
-LOCAL_WEEK_CASES = 0
-HOSPITAL_CASES = 0
-DEATHS = 0
-
-cases_and_deaths = {
+data_structure_JSON = {
     "areaCode": "areaCode",
     "areaName": "areaName",
     "areaType" : "areaType",
@@ -21,7 +14,7 @@ cases_and_deaths = {
 def covid_api_request(location_type = "ltla", location = "Exeter"):
     '''Requests data from the API from a certain place'''
     location_filter = ["areaType="+location_type,"areaName="+location]
-    api = Cov19API(filters=location_filter, structure=cases_and_deaths)
+    api = Cov19API(filters=location_filter, structure=data_structure_JSON)
     data = api.get_json()
     return data
 
@@ -41,38 +34,44 @@ def process_covid_csv_data(covid_csv_data):
     for i in range (3,10):
         if covid_csv_data[i].split(",")[6] != "\n":
             last7day_cases += int(covid_csv_data[i].split(",")[6])
-    current_hospital_cases = int(covid_csv_data[1].split(",")[5])
+    current_hospital_cases = int(covid_csv_data[i].split(",")[5])
     j = 0
     while True:
+        '''continiously tries to convert row 4 of the table into an integer
+        if it fails it goes to the next column and tries again'''
         try:
             total_deaths = int(covid_csv_data[j].split(",")[4])
-            break
+            break #when the first integer value is found the loop stops
         except:
             j = j+1
     return last7day_cases, current_hospital_cases, total_deaths
+
 
 def get_covid_data(location_type= "ltla", location = "Exeter", nation = "England"):
     '''Gets and processes a JSON file of covid data'''
     local_data = covid_api_request(location_type,location)
     national_data = covid_api_request("nation",nation)
     total_deaths = 0
+    #finds first value in "cumDailyNsoDeathsByDeathDate"
     for dic in local_data["data"]:
         if dic["cumDailyNsoDeathsByDeathDate"] is not None:
             total_deaths = dic["cumDailyNsoDeathsByDeathDate"]
             break
 
+    #finds first value in "hospitalCases"
     current_hospital_cases = 0
     for dic in local_data["data"]:
         if dic["hospitalCases"] is not None:
             current_hospital_cases = dic["hospitalCases"]
             break
 
+    #finds the total sum of "newCasesBySpecimenDate" for last 7 days
     days = 0
     local_last7day_cases = 0
     for dic in local_data["data"]:
         if dic["newCasesBySpecimenDate"] is not None:
             days +=1
-            local_last7day_cases += dic["newCasesBySpecimenDate"]          
+            local_last7day_cases += dic["newCasesBySpecimenDate"]
         if days == 7:
             break
 
@@ -81,11 +80,10 @@ def get_covid_data(location_type= "ltla", location = "Exeter", nation = "England
     for dic in national_data["data"]:
         if dic["newCasesBySpecimenDate"] is not None:
             days +=1
-            national_last7day_cases += dic["newCasesBySpecimenDate"]          
+            national_last7day_cases += dic["newCasesBySpecimenDate"]
         if days == 7:
             break
 
-    
     return national_last7day_cases, local_last7day_cases, current_hospital_cases, total_deaths
 
 
